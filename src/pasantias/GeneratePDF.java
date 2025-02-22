@@ -9,9 +9,6 @@ package pasantias;
  *
  * @author PC
  */
-import java.time.Month;
-import java.time.format.TextStyle;
-import java.util.Locale;
 import com.lowagie.text.*;
 import com.lowagie.text.pdf.*;
 import java.io.FileOutputStream;
@@ -24,8 +21,6 @@ public class GeneratePDF {
 
     public static void generate(RolGeneral rol, String fileName) throws Exception {
 
-        String mesComoString = rol.getPeriodoMes(); // obtener el numero del mes 
-        int numeroMes = Integer.parseInt(mesComoString); // Convertir a entero
 
         DecimalFormatSymbols simbolos = new DecimalFormatSymbols();
         simbolos.setDecimalSeparator('.');
@@ -37,7 +32,6 @@ public class GeneratePDF {
         // Crear un objeto DecimalFormat con el patrón y los símbolos personalizados
         DecimalFormat formato = new DecimalFormat(patron, simbolos);
 
-        String nombreMes = Month.of(numeroMes).getDisplayName(TextStyle.FULL, new Locale("es")).toUpperCase();;
 
         Document document = new Document(PageSize.A4);
         PdfWriter.getInstance(document, new FileOutputStream(fileName));
@@ -45,8 +39,8 @@ public class GeneratePDF {
 
         Font titleFont = new Font(Font.HELVETICA, 14, Font.BOLD);
         Font headerFont = new Font(Font.HELVETICA, 12, Font.BOLD);
-        Font textFont1 = new Font(Font.HELVETICA, 9, Font.BOLD);
-        Font textFont = new Font(Font.HELVETICA, 8);
+        Font textFont1 = new Font(Font.HELVETICA, 10, Font.BOLD);
+        Font textFont = new Font(Font.HELVETICA, 10);
         Font textHeaderFont = new Font(Font.HELVETICA, 10, Font.BOLD);
 
         Paragraph header = new Paragraph("Sistema de nomina \n Rol ventas", textHeaderFont);
@@ -69,13 +63,13 @@ public class GeneratePDF {
         Paragraph infoParagraph = new Paragraph();
         infoParagraph.setAlignment(Element.ALIGN_CENTER);
         infoParagraph.add(new Chunk("Periodo: ", textFont1));
-        infoParagraph.add(new Chunk(nombreMes + "                   ", textFont));
+        infoParagraph.add(new Chunk(rol.getNombreMes() + "               ", textFont));
 
         infoParagraph.add(new Chunk("Año: ", textFont1));
-        infoParagraph.add(new Chunk(rol.getPeriodoAnio() + "                    ", textFont));
+        infoParagraph.add(new Chunk(rol.getPeriodoAnio() + "                ", textFont));
 
         infoParagraph.add(new Chunk("Empleado: ", textFont1));
-        infoParagraph.add(new Chunk(rol.getEmpCodigo() + " - " + rol.getEmpNombres() + " " + rol.getEmpApellidos() + "                 ", textFont));
+        infoParagraph.add(new Chunk(rol.getEmpCodigo() + " - " + rol.getEmpNombres() + " " + rol.getEmpApellidos() + "              ", textFont));
 
         infoParagraph.add(new Chunk("Función: ", textFont1));
         infoParagraph.add(new Chunk(rol.getEmpFuncion(), textFont));
@@ -173,7 +167,7 @@ public class GeneratePDF {
 
     }
 
-    private static double totalIngresos = 0; // Ahora es estática
+    private static double totalIngresos = 0; 
     private static double totalEgresos = 0;
     private static double netoAPagar = 0;
 

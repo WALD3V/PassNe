@@ -13,12 +13,12 @@ import java.sql.*;
 
 public class Main {
     public static void main(String[] args) {
-        String empCodigo = "EMP001"; // Código del empleado que quieres consultar
+        String empCodigo = "EMP002"; // Código del empleado que quieres consultar
         String fileName = "RolGeneral_" + empCodigo + ".pdf"; // Nombre del archivo PDF
 
         try {
             // Conexión a la base de datos
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3308/prueba", "root", "040902");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/prueba", "root", "04090202");
 
             // Extraer detalles del rol
             RolGeneral rol = ExtractDetails.getRolByEmpleado(connection, empCodigo);

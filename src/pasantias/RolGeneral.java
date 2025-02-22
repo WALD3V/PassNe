@@ -1,11 +1,18 @@
 package pasantias;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.Month;
+import java.time.format.TextStyle;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class RolGeneral {
 
+
     private String periodoAnio;
-    private String periodoMes;
+    private int periodoMes;
     private String fechaCorte;
     private String empCodigo;
     private String empNombres;
@@ -16,7 +23,7 @@ public class RolGeneral {
     private List<DetalleRol> egresos;
 
     // Constructor con todos los parámetros
-    public RolGeneral(String periodoAnio, String periodoMes, String fechaCorte, String empCodigo, String empNombres, String empApellidos, String empFuncion, List<DetalleRol> ingresos, List<DetalleRol> egresos) {
+    public RolGeneral(String periodoAnio, int periodoMes, String fechaCorte, String empCodigo, String empNombres, String empApellidos, String empFuncion, List<DetalleRol> ingresos, List<DetalleRol> egresos) {
         this.periodoAnio = periodoAnio;
         this.periodoMes = periodoMes;
         this.fechaCorte = fechaCorte;
@@ -33,12 +40,28 @@ public class RolGeneral {
         return periodoAnio;
     }
 
+
     public String getPeriodoMes() {
-        return periodoMes;
+
+        String formattedMonth = String.format("%02d", periodoMes);
+
+        return formattedMonth;
     }
 
     public String getFechaCorte() {
-        return fechaCorte;
+
+        String fechaFormateada = "";
+        String fechaOriginal = fechaCorte;
+        SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat formatoSalida = new SimpleDateFormat("dd/MM/yyyy");
+
+        try {
+            Date fecha = formatoEntrada.parse(fechaOriginal);
+            fechaFormateada = formatoSalida.format(fecha);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return fechaFormateada;
     }
 
     public String getEmpCodigo() {
@@ -63,5 +86,13 @@ public class RolGeneral {
 
     public List<DetalleRol> getEgresos() {
         return egresos;
+    }
+    
+    //formateo de argumentos adicionales al objeto RolGeneral
+    public String getNombreMes() {
+
+        String nombreMes = Month.of(periodoMes).getDisplayName(TextStyle.FULL, new Locale("es")).toUpperCase();;
+
+        return nombreMes;
     }
 }

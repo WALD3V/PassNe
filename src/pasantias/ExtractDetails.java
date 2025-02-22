@@ -27,7 +27,7 @@ public class ExtractDetails {
 
             if (rsEmpleado.next()) {
                 String periodoAnio = rsEmpleado.getString("Periodo_anio");
-                String periodoMes = rsEmpleado.getString("Periodo_Mes");
+                int periodoMes = rsEmpleado.getInt("Periodo_Mes");
                 String fechaCorte = rsEmpleado.getString("Fecha_corte");
                 String codigo = rsEmpleado.getString("EMP_CODIGO");
                 String nombres = rsEmpleado.getString("EMP_NOMBRES");
