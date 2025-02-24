@@ -18,7 +18,7 @@ public class Main {
 
         try {
             // Conexión a la base de datos
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/prueba", "root", "04090202");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3308/prueba", "root", "040902");
 
             // Extraer detalles del rol
             RolGeneral rol = ExtractDetails.getRolByEmpleado(connection, empCodigo);

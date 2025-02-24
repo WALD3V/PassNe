@@ -21,7 +21,6 @@ public class GeneratePDF {
 
     public static void generate(RolGeneral rol, String fileName) throws Exception {
 
-
         DecimalFormatSymbols simbolos = new DecimalFormatSymbols();
         simbolos.setDecimalSeparator('.');
         simbolos.setGroupingSeparator(',');
@@ -32,7 +31,6 @@ public class GeneratePDF {
         // Crear un objeto DecimalFormat con el patrón y los símbolos personalizados
         DecimalFormat formato = new DecimalFormat(patron, simbolos);
 
-
         Document document = new Document(PageSize.A4);
         PdfWriter.getInstance(document, new FileOutputStream(fileName));
         document.open();
@@ -40,6 +38,8 @@ public class GeneratePDF {
         Font titleFont = new Font(Font.HELVETICA, 14, Font.BOLD);
         Font headerFont = new Font(Font.HELVETICA, 12, Font.BOLD);
         Font textFont1 = new Font(Font.HELVETICA, 10, Font.BOLD);
+        Font textFont2 = new Font(Font.HELVETICA, 9, Font.BOLD);
+        Font textFont3 = new Font(Font.HELVETICA, 9);
         Font textFont = new Font(Font.HELVETICA, 10);
         Font textHeaderFont = new Font(Font.HELVETICA, 10, Font.BOLD);
 
@@ -87,6 +87,8 @@ public class GeneratePDF {
         tableDetail.addCell(getHeaderCell("Ingresos", headerFont));
         tableDetail.addCell(getHeaderCell("Egresos", headerFont));
 
+        document.add(tableDetail);
+
         //organizar los datos en la tabla principal
         PdfPTable mainTable = new PdfPTable(6);
         mainTable.setWidthPercentage(100);
@@ -112,17 +114,17 @@ public class GeneratePDF {
 
             // Si hay datos en la tabla de ingresos, se agregan; si no, se pone vacío
             if (i < ingresosData.size()) {
-                mainTable.addCell(getCell(ingresosData.get(i).get(0), textFont, Element.ALIGN_LEFT)); // Columna 4
+                mainTable.addCell(getCell(ingresosData.get(i).get(0), textFont, Element.ALIGN_LEFT)); // Columna 3
                 mainTable.addCell(getCellNum(ingresosData.get(i).get(1), Element.ALIGN_CENTER)); //Columna 4
 
             } else {
-                mainTable.addCell(getCell("", textFont, Element.ALIGN_LEFT)); // Columna 4 vacia
-                mainTable.addCell(getCell("", textFont, Element.ALIGN_CENTER)); // Columna 5 vacía
+                mainTable.addCell(getCell("", textFont, Element.ALIGN_LEFT)); // Columna 3 vacia
+                mainTable.addCell(getCell("", textFont, Element.ALIGN_CENTER)); // Columna 4 vacía
             }
 
             // Si hay datos en la tabla de egresos, se agregan; si no, se pone vacío
             if (i < egresosData.size()) {
-                mainTable.addCell(getCell(ingresosData.get(i).get(0), textFont, Element.ALIGN_LEFT)); // Columna 5
+                mainTable.addCell(getCeVar(ingresosData.get(i).get(0), textFont, Element.ALIGN_LEFT)); // Columna 5
                 mainTable.addCell(getCellNum(ingresosData.get(i).get(1), Element.ALIGN_CENTER)); //columna 6
             } else {
                 mainTable.addCell(getCell("", textFont, Element.ALIGN_LEFT)); // Columna 5
@@ -130,10 +132,37 @@ public class GeneratePDF {
             }
         }
 
-        document.add(tableDetail);
         document.add(mainTable);
 
         document.add(new Paragraph("\n"));
+
+        // tabla de desglose
+        PdfPTable tableDess = new PdfPTable(4);
+        tableDess.setWidthPercentage(60);
+        tableDess.setHorizontalAlignment(Element.ALIGN_LEFT); // Centrado
+
+        PdfPCell header1 = getDessCell("DESGLOSE DE HABERES Y DESCUENTOS", textFont1);
+        header1.setColspan(4); // Ocupará 4 columnas
+        header1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        tableDess.addCell(header1);
+
+        tableDess.addCell(getDessCell("Cuota", textFont2));
+        tableDess.addCell(getDessCell("Descripción", textFont2));
+        tableDess.addCell(getDessCell("Valor", textFont2));
+        tableDess.addCell(getDessCell("Saldo", textFont2));
+
+        tableDess.addCell(getDessCell2("-4 de 6", textFont3));
+        tableDess.addCell(getDessCell2("Oters discounts", textFont3));
+        tableDess.addCell(getDessCell3("46.67", textFont3));
+        tableDess.addCell(getDessCell3("96.32", textFont3));
+
+        tableDess.addCell(getDessCell2("", textFont3));
+        tableDess.addCell(getDessCell2("", textFont3));
+        tableDess.addCell(getDessCell4("-" + "46.67", textFont3));
+        tableDess.addCell(getDessCell2("", textFont3));
+
+        document.add(tableDess);
+        document.add(new Paragraph("\n\n"));
 
 // Calcular totales
         PdfPTable tableDetailTotal = new PdfPTable(4);
@@ -152,7 +181,7 @@ public class GeneratePDF {
         tableDetailTotal.addCell(getCell(formato.format(netoAPagar), textHeaderFont, Element.ALIGN_CENTER));
 
         document.add(tableDetailTotal);
-        document.add(new Paragraph("\n"));
+        document.add(new Paragraph("\n\n"));
 
         PdfPTable firmas = new PdfPTable(3);
         firmas.setWidthPercentage(100);
@@ -167,7 +196,7 @@ public class GeneratePDF {
 
     }
 
-    private static double totalIngresos = 0; 
+    private static double totalIngresos = 0;
     private static double totalEgresos = 0;
     private static double netoAPagar = 0;
 
@@ -200,6 +229,13 @@ public class GeneratePDF {
         cell.setPadding(5);
         cell.setHorizontalAlignment(alignment);
         cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+    private static PdfPCell getCeVar(String text, Font font, int alignment) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPadding(5);
+        cell.setHorizontalAlignment(alignment);
+        cell.setBorder(Rectangle.LEFT);
         return cell;
     }
 
@@ -244,6 +280,41 @@ public class GeneratePDF {
         cell.setPadding(5);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private static PdfPCell getDessCell(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        //cell.setPadding(5);
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private static PdfPCell getDessCell2(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPaddingTop(5);
+        cell.setPaddingBottom(5);
+        cell.setHorizontalAlignment(Element.ALIGN_LEFT);
+        cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private static PdfPCell getDessCell3(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPaddingTop(5);
+        cell.setPaddingBottom(5);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setBorder(Rectangle.NO_BORDER);
+        return cell;
+    }
+
+    private static PdfPCell getDessCell4(String text, Font font) {
+        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        cell.setPaddingTop(5);
+        cell.setPaddingBottom(5);
+        cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        cell.setBorder(Rectangle.TOP);
         return cell;
     }
 
