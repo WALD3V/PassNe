@@ -186,9 +186,9 @@ public class GeneratePDF {
         PdfPTable firmas = new PdfPTable(3);
         firmas.setWidthPercentage(100);
 
-        firmas.addCell(getCell("_____________________________ \n \n Elaborado por: USUARIO", textFont, Element.ALIGN_CENTER));
-        firmas.addCell(getCell("_____________________________ \n \n Supervisado por:", textFont, Element.ALIGN_CENTER));
-        firmas.addCell(getCell("_____________________________ \n \n Recibí Conforme: " + rol.getEmpNombres() + rol.getEmpApellidos(), textFont, Element.ALIGN_CENTER));
+        firmas.addCell(getCell("_____________________________ \n \n Elaborado por: \n USUARIO", textFont, Element.ALIGN_CENTER));
+        firmas.addCell(getCell("_____________________________ \n \n Supervisado por: \n ", textFont, Element.ALIGN_CENTER));
+        firmas.addCell(getCell("_____________________________ \n \n Recibí Conforme: \n " + rol.getEmpNombres() + rol.getEmpApellidos(), textFont, Element.ALIGN_CENTER));
 
         document.add(firmas);
 
