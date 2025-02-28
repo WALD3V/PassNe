@@ -6,7 +6,7 @@
 package pasantias;
 
 /**
- *
+ * Clase para generar un archivo PDF con los detalles del rol de un empleado.
  * @author PC
  */
 import com.lowagie.text.*;
@@ -19,6 +19,12 @@ import java.text.DecimalFormatSymbols;
 
 public class GeneratePDF {
 
+    /**
+     * Método para generar un archivo PDF con los detalles del rol de un empleado.
+     * 
+     * @param rol Objeto RolGeneral con los detalles del rol del empleado.
+     * @param fileName Nombre del archivo PDF a generar.
+     */
     public static void generate(RolGeneral rol, String fileName) throws Exception {
 
         // Reiniciar las variables globales para cada empleado
@@ -32,7 +38,7 @@ public class GeneratePDF {
         simbolos.setDecimalSeparator('.');
         simbolos.setGroupingSeparator(',');
 
-        // Definir el patrón de formato
+        // Definir el patrón de formato de números
         String patron = "#,###.00";
 
         // Crear un objeto DecimalFormat con el patrón y los símbolos personalizados
@@ -57,7 +63,7 @@ public class GeneratePDF {
         Paragraph header = new Paragraph("Sistema de nomina \nRol ventas", textHeaderFont);
         header.setAlignment(Element.ALIGN_LEFT);
 
-        // Crear una tabla con dos celdas
+        // Crear una tabla con dos celdas para el encabezado
         PdfPTable headerTable = new PdfPTable(2);
         headerTable.setWidthPercentage(100);
         //headerTable.setWidths(new int[]{4, 1}); // Ajustar el ancho de las columnas
@@ -78,6 +84,9 @@ public class GeneratePDF {
         // Agregar la tabla al documento
         document.add(headerTable);
         document.add(new Paragraph("\n"));
+
+
+        // Crear el título y la fecha del comprobante
 
         Paragraph title = new Paragraph("COMPROBANTE DE PAGO", titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
@@ -108,12 +117,14 @@ public class GeneratePDF {
         infoParagraph.add(new Chunk("Función: ", textFont1));
         infoParagraph.add(new Chunk(rol.getEmpFuncion(), textFont));
 
-        // Agregar todo en una sola celda
+        // Agregar todo el detalle en una sola celda
         tableInfo.addCell(getInfoHeaderCell(infoParagraph, Element.ALIGN_CENTER));
 
         document.add(tableInfo);
         document.add(new Paragraph("\n"));
 
+
+        // Crear la tabla de detalle
         PdfPTable tableDetail = new PdfPTable(3);
         tableDetail.setWidthPercentage(100);
 

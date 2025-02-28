@@ -6,7 +6,7 @@
 package pasantias;
 
 /**
- *
+ * Clase para extraer detalles del rol de un empleado desde la base de datos.
  * @author PC
  */
 import java.sql.*;
@@ -14,6 +14,13 @@ import java.util.*;
 
 public class ExtractDetails {
 
+    /**
+     * Método para obtener el rol de un empleado específico desde la base de datos.
+     * 
+     * @param connection Conexión a la base de datos.
+     * @param empCodigo Código del empleado.
+     * @return Objeto RolGeneral con los detalles del rol del empleado.
+     */
     public static RolGeneral getRolByEmpleado(Connection connection, String empCodigo) throws SQLException {
         List<DetalleRol> ingresos = new ArrayList<>();
         List<DetalleRol> egresos = new ArrayList<>();

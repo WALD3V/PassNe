@@ -8,6 +8,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * Clase que representa los detalles del rol de un empleado.
+ */
 public class RolGeneral {
 
     private String periodoAnio;

@@ -6,8 +6,11 @@
 package pasantias;
 
 /**
- *
- * @author PC
+ * Clase principal para la generación de un PDF con detalles del rol de un empleado.
+ * Se conecta a una base de datos, extrae los detalles del rol de un empleado específico
+ * y genera un archivo PDF con esa información.
+ * 
+ * @autor PC
  */
 import java.sql.*;
 import java.util.List;
