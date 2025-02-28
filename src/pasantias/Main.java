@@ -10,15 +10,17 @@ package pasantias;
  * @author PC
  */
 import java.sql.*;
+import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        String empCodigo = "EMP002"; // Código del empleado que quieres consultar
+        String empCodigo = "EMP001"; // Código del empleado que quieres consultar
         String fileName = "RolGeneral_" + empCodigo + ".pdf"; // Nombre del archivo PDF
 
         try {
             // Conexión a la base de datos
-            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/prueba", "root", "04090202");
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/prueba", "root",
+                    "04090202");
 
             // Extraer detalles del rol
             RolGeneral rol = ExtractDetails.getRolByEmpleado(connection, empCodigo);
@@ -27,6 +29,8 @@ public class Main {
             if (rol != null) {
                 GeneratePDF.generate(rol, fileName);
                 System.out.println("PDF generado exitosamente: " + fileName);
+
+                
             } else {
                 System.out.println("Empleado no encontrado.");
             }

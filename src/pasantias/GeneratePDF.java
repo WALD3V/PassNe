@@ -21,6 +21,13 @@ public class GeneratePDF {
 
     public static void generate(RolGeneral rol, String fileName) throws Exception {
 
+        // Reiniciar las variables globales para cada empleado
+        totalIngresos = 0;
+        totalEgresos = 0;
+        totalEgmenosDesc = 0;
+        descuentos = 0;
+        netoAPagar = 0;
+
         DecimalFormatSymbols simbolos = new DecimalFormatSymbols();
         simbolos.setDecimalSeparator('.');
         simbolos.setGroupingSeparator(',');
@@ -43,16 +50,41 @@ public class GeneratePDF {
         Font textFont = new Font(Font.HELVETICA, 10);
         Font textHeaderFont = new Font(Font.HELVETICA, 10, Font.BOLD);
 
-        Paragraph header = new Paragraph("Sistema de nomina \n Rol ventas", textHeaderFont);
+        Image logo = Image.getInstance("src/pasantias/Sample.png");
+        logo.scaleToFit(100, 50); // Ajustar el tamaño de la imagen
+        logo.setAlignment(Element.ALIGN_RIGHT);
+
+        Paragraph header = new Paragraph("Sistema de nomina \nRol ventas", textHeaderFont);
         header.setAlignment(Element.ALIGN_LEFT);
-        document.add(header);
+
+        // Crear una tabla con dos celdas
+        PdfPTable headerTable = new PdfPTable(2);
+        headerTable.setWidthPercentage(100);
+        //headerTable.setWidths(new int[]{4, 1}); // Ajustar el ancho de las columnas
+
+        // Agregar el texto a la primera celda
+        PdfPCell textCell = new PdfPCell(header);
+        textCell.setBorder(Rectangle.NO_BORDER);
+        textCell.setHorizontalAlignment(Element.ALIGN_LEFT);
+
+        headerTable.addCell(textCell);
+
+        // Agregar la imagen a la segunda celda
+        PdfPCell logoCell = new PdfPCell(logo);
+        logoCell.setBorder(Rectangle.NO_BORDER);
+        logoCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+        headerTable.addCell(logoCell);
+
+        // Agregar la tabla al documento
+        document.add(headerTable);
         document.add(new Paragraph("\n"));
 
         Paragraph title = new Paragraph("COMPROBANTE DE PAGO", titleFont);
         title.setAlignment(Element.ALIGN_CENTER);
         document.add(title);
 
-        Paragraph dateRange = new Paragraph("01/" + rol.getPeriodoMes() + "/" + rol.getPeriodoAnio() + " - " + rol.getFechaCorte(), textFont);
+        Paragraph dateRange = new Paragraph(
+                "01/" + rol.getPeriodoMes() + "/" + rol.getPeriodoAnio() + " - " + rol.getFechaCorte(), textFont);
         dateRange.setAlignment(Element.ALIGN_CENTER);
         document.add(dateRange);
         document.add(new Paragraph("\n"));
@@ -63,13 +95,15 @@ public class GeneratePDF {
         Paragraph infoParagraph = new Paragraph();
         infoParagraph.setAlignment(Element.ALIGN_CENTER);
         infoParagraph.add(new Chunk("Periodo: ", textFont1));
-        infoParagraph.add(new Chunk(rol.getNombreMes() + "               ", textFont));
+        infoParagraph.add(new Chunk(rol.getNombreMes() + "      ", textFont));
 
         infoParagraph.add(new Chunk("Año: ", textFont1));
-        infoParagraph.add(new Chunk(rol.getPeriodoAnio() + "                ", textFont));
+        infoParagraph.add(new Chunk(rol.getPeriodoAnio() + "        ", textFont));
 
         infoParagraph.add(new Chunk("Empleado: ", textFont1));
-        infoParagraph.add(new Chunk(rol.getEmpCodigo() + " - " + rol.getEmpNombres() + " " + rol.getEmpApellidos() + "              ", textFont));
+        infoParagraph.add(new Chunk(
+                rol.getEmpCodigo() + " - " + rol.getEmpNombres() + " " + rol.getEmpApellidos() + "      ",
+                textFont));
 
         infoParagraph.add(new Chunk("Función: ", textFont1));
         infoParagraph.add(new Chunk(rol.getEmpFuncion(), textFont));
@@ -89,82 +123,25 @@ public class GeneratePDF {
 
         document.add(tableDetail);
 
-        //organizar los datos en la tabla principal
+        // organizar los datos en la tabla principal
         PdfPTable mainTable = new PdfPTable(6);
         mainTable.setWidthPercentage(100);
 
-        // Fuente para texto
-        // Crear subtablas con datos
-        PdfPTable ingresosTable = createIngresosTable(rol.getIngresos(), textFont);
+        PdfPTable ingresosEgresosTable = createIngresosEgresosTable(rol.getIngresos(), rol.getEgresos(), textFont);
 
-        PdfPTable egresosTable = createEgresosTable(rol.getEgresos(), textFont);
-
-        // Extraer los datos de las subtablas
-        List<List<String>> ingresosData = extractTableData(ingresosTable);
-        List<List<String>> egresosData = extractTableData(egresosTable);
-
-        // Obtener la cantidad máxima de filas entre ambas tablas
-        int maxRows = Math.max(ingresosData.size(), egresosData.size());
-
-        // Llenar la tabla principal con datos de ambas tablas
-        for (int i = 0; i < maxRows; i++) {
-
-            mainTable.addCell(getCell("", textFont, Element.ALIGN_LEFT)); // Columna 5
-            mainTable.addCell(getCell("", textFont, Element.ALIGN_CENTER)); // columna 6
-
-            // Si hay datos en la tabla de ingresos, se agregan; si no, se pone vacío
-            if (i < ingresosData.size()) {
-                mainTable.addCell(getCell(ingresosData.get(i).get(0), textFont, Element.ALIGN_LEFT)); // Columna 3
-                mainTable.addCell(getCellNum(ingresosData.get(i).get(1), Element.ALIGN_CENTER)); //Columna 4
-
-            } else {
-                mainTable.addCell(getCell("", textFont, Element.ALIGN_LEFT)); // Columna 3 vacia
-                mainTable.addCell(getCell("", textFont, Element.ALIGN_CENTER)); // Columna 4 vacía
-            }
-
-            // Si hay datos en la tabla de egresos, se agregan; si no, se pone vacío
-            if (i < egresosData.size()) {
-                mainTable.addCell(getCeVar(ingresosData.get(i).get(0), textFont, Element.ALIGN_LEFT)); // Columna 5
-                mainTable.addCell(getCellNum(ingresosData.get(i).get(1), Element.ALIGN_CENTER)); //columna 6
-            } else {
-                mainTable.addCell(getCell("", textFont, Element.ALIGN_LEFT)); // Columna 5
-                mainTable.addCell(getCell("", textFont, Element.ALIGN_CENTER)); // columna 6
-            }
-        }
-
-        document.add(mainTable);
+        // Agregar la tabla de ingresos y egresos al documento
+        document.add(ingresosEgresosTable);
 
         document.add(new Paragraph("\n"));
 
-        // tabla de desglose
-        PdfPTable tableDess = new PdfPTable(4);
-        tableDess.setWidthPercentage(60);
-        tableDess.setHorizontalAlignment(Element.ALIGN_LEFT); // Centrado
-
-        PdfPCell header1 = getDessCell("DESGLOSE DE HABERES Y DESCUENTOS", textFont1);
-        header1.setColspan(4); // Ocupará 4 columnas
-        header1.setHorizontalAlignment(Element.ALIGN_CENTER);
-        tableDess.addCell(header1);
-
-        tableDess.addCell(getDessCell("Cuota", textFont2));
-        tableDess.addCell(getDessCell("Descripción", textFont2));
-        tableDess.addCell(getDessCell("Valor", textFont2));
-        tableDess.addCell(getDessCell("Saldo", textFont2));
-
-        tableDess.addCell(getDessCell2("-4 de 6", textFont3));
-        tableDess.addCell(getDessCell2("Oters discounts", textFont3));
-        tableDess.addCell(getDessCell3("46.67", textFont3));
-        tableDess.addCell(getDessCell3("96.32", textFont3));
-
-        tableDess.addCell(getDessCell2("", textFont3));
-        tableDess.addCell(getDessCell2("", textFont3));
-        tableDess.addCell(getDessCell4("-" + "46.67", textFont3));
-        tableDess.addCell(getDessCell2("", textFont3));
-
-        document.add(tableDess);
+        //agregamos la tabla de desglose de haberes y descuentos
+        // Crear y agregar la tabla de descuentos
+        PdfPTable descuentosTable = createDescuentosTable(rol.getDescuentos(), textFont1, textFont2, textFont3);
+        document.add(descuentosTable);
         document.add(new Paragraph("\n\n"));
 
-// Calcular totales
+        //actualizamos las variables que muestran los totales
+        // Calcular totales
         PdfPTable tableDetailTotal = new PdfPTable(4);
         tableDetail.setWidthPercentage(100);
 
@@ -172,7 +149,7 @@ public class GeneratePDF {
         tableDetailTotal.addCell(getCell(formato.format(totalIngresos), textFont, Element.ALIGN_CENTER));
 
         tableDetailTotal.addCell(getCell("TOTAL EGRESOS:", textHeaderFont, Element.ALIGN_LEFT));
-        tableDetailTotal.addCell(getCell(formato.format(totalEgresos), textFont, Element.ALIGN_CENTER));
+        tableDetailTotal.addCell(getCell(formato.format(totalEgmenosDesc), textFont, Element.ALIGN_CENTER));
 
         tableDetailTotal.addCell(getCell("", textFont, Element.ALIGN_LEFT));
         tableDetailTotal.addCell(getCell("", textFont, Element.ALIGN_CENTER));
@@ -186,9 +163,12 @@ public class GeneratePDF {
         PdfPTable firmas = new PdfPTable(3);
         firmas.setWidthPercentage(100);
 
-        firmas.addCell(getCell("_____________________________ \n \n Elaborado por: \n USUARIO", textFont, Element.ALIGN_CENTER));
-        firmas.addCell(getCell("_____________________________ \n \n Supervisado por: \n ", textFont, Element.ALIGN_CENTER));
-        firmas.addCell(getCell("_____________________________ \n \n Recibí Conforme: \n " + rol.getEmpNombres() + rol.getEmpApellidos(), textFont, Element.ALIGN_CENTER));
+        firmas.addCell(getCell("_____________________________ \n \n Elaborado por: \n USUARIO", textFont,
+                Element.ALIGN_CENTER));
+        firmas.addCell(
+                getCell("_____________________________ \n \n Supervisado por: \n ", textFont, Element.ALIGN_CENTER));
+        firmas.addCell(getCell("_____________________________ \n \n Recibí Conforme: \n " + rol.getEmpNombres()
+                + rol.getEmpApellidos(), textFont, Element.ALIGN_CENTER));
 
         document.add(firmas);
 
@@ -198,31 +178,9 @@ public class GeneratePDF {
 
     private static double totalIngresos = 0;
     private static double totalEgresos = 0;
+    private static double totalEgmenosDesc = 0;
+    private static double descuentos = 0;
     private static double netoAPagar = 0;
-
-    private static PdfPTable createIngresosTable(List<DetalleRol> ingresos, Font font) {
-        PdfPTable table = new PdfPTable(2);
-        table.setWidthPercentage(100);
-        for (DetalleRol ingreso : ingresos) {
-            table.addCell(getCell(ingreso.getNombre(), font, Element.ALIGN_LEFT));
-            table.addCell(getCell(String.valueOf(ingreso.getValor()), font, Element.ALIGN_RIGHT)); // Conversión segura
-            totalIngresos += ingreso.getValor(); // Acumulando el valor en cada iteración
-
-        }
-        return table;
-    }
-
-    private static PdfPTable createEgresosTable(List<DetalleRol> egresos, Font font) {
-        PdfPTable table = new PdfPTable(2);
-        table.setWidthPercentage(100);
-        for (DetalleRol egreso : egresos) {
-            table.addCell(getCell(egreso.getNombre(), font, Element.ALIGN_LEFT));
-            table.addCell(getCell(String.valueOf(egreso.getValor()), font, Element.ALIGN_RIGHT)); // Conversión segura
-            totalEgresos += egreso.getValor(); // Acumulando el valor en cada iteración
-
-        }
-        return table;
-    }
 
     private static PdfPCell getCell(String text, Font font, int alignment) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
@@ -231,6 +189,7 @@ public class GeneratePDF {
         cell.setBorder(Rectangle.NO_BORDER);
         return cell;
     }
+
     private static PdfPCell getCeVar(String text, Font font, int alignment) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
         cell.setPadding(5);
@@ -285,7 +244,7 @@ public class GeneratePDF {
 
     private static PdfPCell getDessCell(String text, Font font) {
         PdfPCell cell = new PdfPCell(new Phrase(text, font));
-        //cell.setPadding(5);
+        // cell.setPadding(5);
         cell.setHorizontalAlignment(Element.ALIGN_CENTER);
         cell.setBorder(Rectangle.NO_BORDER);
         return cell;
@@ -301,7 +260,23 @@ public class GeneratePDF {
     }
 
     private static PdfPCell getDessCell3(String text, Font font) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+
+        double num = Double.parseDouble(text);
+
+        DecimalFormatSymbols simbolos = new DecimalFormatSymbols();
+        simbolos.setDecimalSeparator('.');
+        simbolos.setGroupingSeparator(',');
+
+        // Definir el patrón de formato
+        String patron = "#,###.00";
+
+        // Crear un objeto DecimalFormat con el patrón y los símbolos personalizados
+        DecimalFormat formato = new DecimalFormat(patron, simbolos);
+
+        // Formatear el número
+        String numeroFormateado = formato.format(num);
+
+        PdfPCell cell = new PdfPCell(new Phrase(numeroFormateado, font));
         cell.setPaddingTop(5);
         cell.setPaddingBottom(5);
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -310,7 +285,21 @@ public class GeneratePDF {
     }
 
     private static PdfPCell getDessCell4(String text, Font font) {
-        PdfPCell cell = new PdfPCell(new Phrase(text, font));
+        double num = Double.parseDouble(text);
+
+        DecimalFormatSymbols simbolos = new DecimalFormatSymbols();
+        simbolos.setDecimalSeparator('.');
+        simbolos.setGroupingSeparator(',');
+
+        // Definir el patrón de formato
+        String patron = "#,###.00";
+
+        // Crear un objeto DecimalFormat con el patrón y los símbolos personalizados
+        DecimalFormat formato = new DecimalFormat(patron, simbolos);
+
+        // Formatear el número
+        String numeroFormateado = formato.format(num);
+        PdfPCell cell = new PdfPCell(new Phrase(numeroFormateado, font));
         cell.setPaddingTop(5);
         cell.setPaddingBottom(5);
         cell.setHorizontalAlignment(Element.ALIGN_RIGHT);
@@ -318,30 +307,76 @@ public class GeneratePDF {
         return cell;
     }
 
-    private static List<List<String>> extractTableData(PdfPTable table) {
-        List<List<String>> data = new ArrayList<>();
+    private static PdfPTable createIngresosEgresosTable(List<DetalleRol> ingresos, List<DetalleRol> egresos, Font font) {
+        PdfPTable table = new PdfPTable(6);
+        table.setWidthPercentage(100);
 
-        // Obtener todas las filas de la tabla
-        List<?> rows = table.getRows(); // getRows() devuelve List<?> (lista de objetos)
+        int maxRows = Math.max(ingresos.size(), egresos.size());
 
-        for (Object rowObj : rows) {
-            if (rowObj instanceof PdfPRow) { // Asegurar que el objeto es un PdfPRow
-                PdfPRow row = (PdfPRow) rowObj; // Convertir Object a PdfPRow
-                List<String> rowData = new ArrayList<>();
-                PdfPCell[] cells = row.getCells(); // Obtener las celdas de la fila
+        for (int i = 0; i < maxRows; i++) {
+            table.addCell(getCell("", font, Element.ALIGN_LEFT)); // Columna 1 vacía
+            table.addCell(getCell("", font, Element.ALIGN_LEFT)); // Columna 2 vacía
 
-                for (PdfPCell cell : cells) {
-                    if (cell != null && cell.getPhrase() != null) {
-                        rowData.add(cell.getPhrase().getContent()); // Obtener el texto
-                    } else {
-                        rowData.add(""); // Si la celda está vacía, agregar un string vacío
-                    }
-                }
+            if (i < ingresos.size()) {
+                DetalleRol ingreso = ingresos.get(i);
+                table.addCell(getCell(ingreso.getNombre(), font, Element.ALIGN_LEFT)); // Columna 3
+                table.addCell(getCellNum(String.valueOf(ingreso.getValor()), Element.ALIGN_RIGHT)); // Columna 4
+                totalIngresos += ingreso.getValor(); // Acumulando el valor en cada iteración
+            } else {
+                table.addCell(getCell("", font, Element.ALIGN_LEFT)); // Columna 3 vacía
+                table.addCell(getCell("", font, Element.ALIGN_RIGHT)); // Columna 4 vacía
+            }
 
-                data.add(rowData);
+            if (i < egresos.size()) {
+                DetalleRol egreso = egresos.get(i);
+                table.addCell(getCeVar(egreso.getNombre(), font, Element.ALIGN_LEFT)); // Columna 5
+                table.addCell(getCellNum(String.valueOf(egreso.getValor()), Element.ALIGN_RIGHT)); // Columna 6
+                totalEgresos += egreso.getValor(); // Acumulando el valor en cada iteración
+            } else {
+                table.addCell(getCell("", font, Element.ALIGN_LEFT)); // Columna 5 vacía
+                table.addCell(getCell("", font, Element.ALIGN_RIGHT)); // Columna 6 vacía
             }
         }
-        netoAPagar = totalIngresos - totalEgresos;
-        return data;
+
+        return table;
     }
+
+    private static PdfPTable createDescuentosTable(List<DetalleRol> descuentosList, Font textFont1, Font textFont2, Font textFont3) {
+        double totalDescuentos = 0;
+        PdfPTable tableDess = new PdfPTable(4);
+        tableDess.setWidthPercentage(60);
+        tableDess.setHorizontalAlignment(Element.ALIGN_LEFT); // Centrado
+
+        PdfPCell header1 = getDessCell("DESGLOSE DE HABERES Y DESCUENTOS", textFont1);
+        header1.setColspan(4); // Ocupará 4 columnas
+        header1.setHorizontalAlignment(Element.ALIGN_CENTER);
+        tableDess.addCell(header1);
+
+        tableDess.addCell(getDessCell("Cuota", textFont2));
+        tableDess.addCell(getDessCell("Descripción", textFont2));
+        tableDess.addCell(getDessCell("Valor", textFont2));
+        tableDess.addCell(getDessCell("Saldo", textFont2));
+
+        // Agregar los descuentos a la tabla
+        for (DetalleRol descuento : descuentosList) {
+            tableDess.addCell(getDessCell2(descuento.getReferencia(), textFont3)); // Cuota (Referencia)
+            tableDess.addCell(getDessCell2(descuento.getNombre(), textFont3)); // Descripción (Nombre)
+            tableDess.addCell(getDessCell3(String.valueOf(descuento.getValor()), textFont3)); // Valor
+            tableDess.addCell(getDessCell3(String.valueOf(descuento.getSaldo()), textFont3)); // Saldo
+            totalDescuentos += descuento.getValor(); // Acumular el valor del descuento
+        }
+
+        totalEgmenosDesc = totalEgresos + descuentos;
+        netoAPagar = totalIngresos - totalEgmenosDesc;
+        // Actualizar la variable global descuentos
+        descuentos += totalDescuentos;
+
+        tableDess.addCell(getDessCell("", textFont2));
+        tableDess.addCell(getDessCell("", textFont2));
+        tableDess.addCell(getDessCell4(String.valueOf(totalDescuentos), textFont2));
+        tableDess.addCell(getDessCell("", textFont2));
+
+        return tableDess;
+    }
+
 }

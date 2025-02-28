@@ -10,7 +10,6 @@ import java.util.Locale;
 
 public class RolGeneral {
 
-
     private String periodoAnio;
     private int periodoMes;
     private String fechaCorte;
@@ -21,9 +20,10 @@ public class RolGeneral {
 
     private List<DetalleRol> ingresos;
     private List<DetalleRol> egresos;
+    private List<DetalleRol> descuentos; // Nueva lista para descuentos
 
     // Constructor con todos los parámetros
-    public RolGeneral(String periodoAnio, int periodoMes, String fechaCorte, String empCodigo, String empNombres, String empApellidos, String empFuncion, List<DetalleRol> ingresos, List<DetalleRol> egresos) {
+    public RolGeneral(String periodoAnio, int periodoMes, String fechaCorte, String empCodigo, String empNombres, String empApellidos, String empFuncion, List<DetalleRol> ingresos, List<DetalleRol> egresos, List<DetalleRol> descuentos) {
         this.periodoAnio = periodoAnio;
         this.periodoMes = periodoMes;
         this.fechaCorte = fechaCorte;
@@ -33,6 +33,7 @@ public class RolGeneral {
         this.empFuncion = empFuncion;
         this.ingresos = ingresos;
         this.egresos = egresos;
+        this.descuentos = descuentos; // Inicializar la nueva lista
     }
 
     // Métodos de acceso a los campos
@@ -40,19 +41,15 @@ public class RolGeneral {
         return periodoAnio;
     }
 
-
     public String getPeriodoMes() {
-
         String formattedMonth = String.format("%02d", periodoMes);
-
         return formattedMonth;
     }
 
     public String getFechaCorte() {
-
         String fechaFormateada = "";
         String fechaOriginal = fechaCorte;
-        SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat formatoEntrada = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat formatoSalida = new SimpleDateFormat("dd/MM/yyyy");
 
         try {
@@ -87,12 +84,14 @@ public class RolGeneral {
     public List<DetalleRol> getEgresos() {
         return egresos;
     }
-    
-    //formateo de argumentos adicionales al objeto RolGeneral
+
+    public List<DetalleRol> getDescuentos() {
+        return descuentos;
+    }
+
+    // Formateo de argumentos adicionales al objeto RolGeneral
     public String getNombreMes() {
-
-        String nombreMes = Month.of(periodoMes).getDisplayName(TextStyle.FULL, new Locale("es")).toUpperCase();;
-
+        String nombreMes = Month.of(periodoMes).getDisplayName(TextStyle.FULL, new Locale("es")).toUpperCase();
         return nombreMes;
     }
 }
